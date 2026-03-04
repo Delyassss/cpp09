@@ -31,8 +31,8 @@ class BitcoinExchange
     BitcoinExchange &operator=(BitcoinExchange const &rhs);
     data_M &getdata();
     input_M &getinput();
-    void readData(std::map<std::string, float> &mydata, std::string filename, char delim);
-
+    void readData(std::map<std::string, float> &mydata, std::string filename, char delim, int insert);
+    
 
 
 
