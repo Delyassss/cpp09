@@ -26,7 +26,7 @@ bool isNumber(std::string line, int forDate)
 
     if (std::atof(line.c_str()) < 0)
         return (std::cout << "Error: not a positive number." << std::endl, false);
-    if (!forDate && std::atof(line.c_str()) > 1000)
+    if (!forDate && std::atof(line.c_str()) > 1000.0)
     {
         return (std::cout << "Error: too large a number." << std::endl,false);
     }
@@ -144,7 +144,10 @@ void BitcoinExchange::readData(std::map<std::string, double> &mydata, std::strin
     {
         std::getline(d_input, line);
         if (line != "date,exchange_rate" && line.find("date,exchange_rate") == std::string::npos)
-             throw (std::runtime_error("Error: invalid database format."));
+            {
+                d_input.close();
+                throw (std::runtime_error("Error: invalid database format."));
+            }
     }
     else if (delim == '|')
     {
@@ -164,7 +167,6 @@ void BitcoinExchange::readData(std::map<std::string, double> &mydata, std::strin
                 throw (std::runtime_error("Error: invalid database format."));
            }
         }
-        //std::getline(d_input, line);
     }
     d_input.clear();
     d_input.close();

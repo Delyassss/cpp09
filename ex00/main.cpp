@@ -7,5 +7,13 @@ int main(int argc, char **argv)
         std::cout << "Wrong argument!\n";
         return 1;
     }
-    BitcoinExchange btc(argv[1]);
+    try
+    {
+        BitcoinExchange btc(argv[1]);
+    }
+    catch (std::exception &e)
+    {
+        std::cerr << e.what() << std::endl;
+    }
+    return (0);
 }
