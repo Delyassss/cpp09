@@ -61,13 +61,36 @@ thePairs PmergeMe::sortPairs(thePairs &v)
 
     left = sortPairs(left);
     right = sortPairs(right);
-
-    if (left.[0].first > right[0].first.first)
-        std::swap(left, right);
     
     thePairs &res = this->getResult();
-    res.push_back(left[0]);
-    res.push_back(right[0]);
+
+    int i = 0;
+    int j = 0;
+    while (i < left.size() && j < right.size())
+    {
+        if (left[i].first > right[j].first)
+        {
+            res.push_back(right[j]);
+            j++;
+        }
+        else
+        {
+            res.push_back(left[i]);
+            i++;
+        }
+    }
+
+    while (i < left.size())
+    {
+        res.push_back(left[i]);
+        i++;
+    }
+    while (j < right.size())
+    {
+        res.push_back(right[j]);
+        j++;
+    }
+    return res;
     
 }
 
@@ -76,11 +99,56 @@ thePairs &PmergeMe::getResult()
     return this->result;
 }
 
+bool PmergeMe::LosersAndWinners(Loser &loser, Winner &winners)
+{
+    thePairs &res = this->getResult();
+
+    thePairs::iterator it = res.begin();
+
+    
+    // Low value & High Value 
+    while (it != res.end())
+    {
+        winners.push_back(it->first);
+        losers.push_back(it->second);
+        it++;
+    }
+    
+    // we take those high numbers (second) and find the lowest value and 
+    High::iterator h_it = winners.begin();
+    Low::iterator l_it = losers.begin();
+
+    while (l_it != losers.end())
+    {
+        Winner::iterator pos = std::lower_bound(h_it , winners.end(), *l_it);
+        winners.insert(pos, *l_it);
+        l_it++;
+    }
+    // now the Remaining value
+    Winner::iterator pos = std::lower_bound(h_it , winners.end(), getRemainingV());
+    winners.insert(pos, getRemainingV()); 
+
+    return true;
+}
+
+losers &PmergeMe::getlosers()
+{
+
+    return this->losers;
+}
+
+winners &PmergeMe::getwinners()
+{
+    return this->winners;
+}
+
 PmergeMe::PmergeMe(char **argv)
 {
     this->remainingV = 0;
     if (!this->parse_args(argv))
         return ;
+    this->sortPairs(this->getPairs());
+
     
     
 }

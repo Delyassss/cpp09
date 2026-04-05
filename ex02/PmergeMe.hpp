@@ -6,13 +6,21 @@
 #include "vector"
 #include "algorithm"
 
-typename std::vector<std::pair<unsigned long, unsigned long> > thePairs
+typename std::vector<std::pair<unsigned long, unsigned long> > thePairs;
+typename std::deque<unsigned long> Loser;
+typename std::deque<unsigned long> Winner;
+
+
 class PmergeMe
 {
     private :
         unsigned long remainingV ;
         thePairs v;
         thePairs result;
+        std::deque<unsigned long> loser;
+        std::deque<unsigned long> winner;
+
+
 
         PmergeMe();
         PmergeMe(const PmergeMe &other);
@@ -27,6 +35,12 @@ class PmergeMe
         thePairs    &getPairs();
         thePairs    sortPairs(thePairs &v);
         thePairs    &getResult();
+        bool        LosersAndWinners(std::deque<Loser &loser, High &winner);
+        Loser       &getLows();
+        High        &getHighs();
+
+
+
 }
 
 
