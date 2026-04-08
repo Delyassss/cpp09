@@ -3,16 +3,8 @@
 
 int main(int argc, char **argv)
 {
-    try
-    {
-        if (argc < 2)
-            throw std::runtime_error("Invalid arguments !");
-        PmergeMe(argv);
-    
-    }
-    catch(const std::exception& e)
-    {
-        std::cerr << e.what() << '\n';
-    }
-    
+
+    if (argc < 2)
+           return (std::cerr << "Error\n", 1);
+    PmergeMe pmergeme(argv, argc);
 }

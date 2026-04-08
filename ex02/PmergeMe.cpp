@@ -1,4 +1,93 @@
 #include "PmergeMe.hpp"
+double time_me(struct timeval start, struct timeval end);
+// void print_me(thePairs &v, std::deque<unsigned long> &data)
+// {
+//     if (!v.empty())
+//     {
+//         std::cout << "Pairs :";
+//         for (size_t i = 0; i < v.size(); i++)
+//         {
+//             std::cout << " " << v[i].first << " " << v[i].second;
+//             if (i == v.size() - 1)
+//             {
+//                 std::cout << " " << std::endl;
+//             }
+//         }
+//     }
+//     if (!data.empty())
+//     {
+//         for (size_t i = 0; i < data.size(); i++)
+//         {
+//             std::cout << " " << data[i] << " ";
+//             if (i == data.size() - 1)
+//             {
+//                 std::cout << " " << std::endl ;
+//             }
+//         }
+//     }
+    
+// }
+void PmergeMe::Output(Winner &winners, char **argv, int argc)
+{
+     if (winners.empty() || v.empty())
+     {
+        std::cerr << "Error\n";
+        return ;
+     }
+    std::cout << "Before :";
+    for (int i = 1; i < argc; i++)
+    {
+        std::cout << " " << argv[i];
+        if (i == argc - 1)
+            std::cout << " " << std::endl;
+    }
+    std::cout << "After :";
+    for (size_t i = 0; i < winners.size(); i++)
+    {
+        std::cout << " " << winners[i];
+        if (i == winners.size() - 1)
+            std::cout << " " << std::endl;
+    }
+
+    double first_algo_time = get_first_algo_time();
+    double second_algo_time = get_second_algo_time();
+    std::cout << "Time to process a range of " << get_range() << " elements with std::vector : " << first_algo_time<< " us" << std::endl;
+    std::cout << "Time to process a range of " << get_range() << " elements with std::deque : "<< second_algo_time << " us" << std::endl;
+}
+
+PmergeMe::PmergeMe(char **argv, int argc)
+{
+    struct timeval start1 , end1 , start2, end2;
+    this->first_algo_time = 0;
+    this->second_algo_time = 0;
+    this->remainingV = 0;
+    this->Remainingflag = false;
+
+    if (!this->parse_args(argv, argc))
+        return ;
+
+    gettimeofday(&start1, NULL);
+        sortPairs(this->getPairs());
+    gettimeofday(&end1, NULL);
+    this->first_algo_time = time_me(start1, end1);  
+
+    gettimeofday(&start2, NULL);
+        if (!LosersAndWinners(getlosers(), getwinners()))
+        {
+            std::cerr << "Error\n";
+            return ;
+        }
+    gettimeofday(&end2, NULL);
+    this->second_algo_time = time_me(start2, end2);
+
+    Output(this->getwinners() , argv , argc);
+
+
+
+    
+    
+}
+
 
 bool digits(std::string str)
 {
@@ -18,10 +107,11 @@ bool digits(std::string str)
     return true;
 }
 
-bool PmergeMe::parse_args(char **argv)
+bool PmergeMe::parse_args(char **argv, int argc)
 {
-    std::vector<std::pair<int, int> > &v = this->getPairs();
+   thePairs &v = this->getPairs();
     std::pair<int, int> p;
+
     if (!argv || !argv[1])
         return (std::cerr << "Error\n", false);
     
@@ -35,8 +125,12 @@ bool PmergeMe::parse_args(char **argv)
             p.second = std::min(atoi(argv[i - 1]), atoi(argv[i]));
             v.push_back(p);
         }
-        if (!argv[i + 1] && !(i % 2 == 0))
+        if (i + 1 >= argc && !(i % 2 == 0))
+        {
+            set_remaining_value(true);
             this->setRemainingV(atoi(argv[i]));
+            return true;
+        }
     }
     return true;
 }
@@ -44,6 +138,16 @@ bool PmergeMe::parse_args(char **argv)
 thePairs &PmergeMe::getPairs()
 {
     return this->v;
+}
+
+
+
+double time_me(struct timeval start, struct timeval end)
+{
+    double sec = end.tv_sec - start.tv_sec;
+    double micro = end.tv_usec - start.tv_usec;
+    double res = micro + sec / 1000000.0;  
+    return (res); 
 }
 
 thePairs PmergeMe::sortPairs(thePairs &v)
@@ -62,10 +166,10 @@ thePairs PmergeMe::sortPairs(thePairs &v)
     left = sortPairs(left);
     right = sortPairs(right);
     
-    thePairs &res = this->getResult();
+    thePairs res ;
+    size_t i = 0;
+    size_t j = 0;
 
-    int i = 0;
-    int j = 0;
     while (i < left.size() && j < right.size())
     {
         if (left[i].first > right[j].first)
@@ -90,7 +194,8 @@ thePairs PmergeMe::sortPairs(thePairs &v)
         res.push_back(right[j]);
         j++;
     }
-    return res;
+    v = res;
+    return v;
     
 } 
 
@@ -99,14 +204,35 @@ thePairs &PmergeMe::getResult()
     return this->result;
 }
 
-bool PmergeMe::LosersAndWinners(Loser &loser, Winner &winners)
+std::deque<unsigned long> &PmergeMe::generate_Jacobsthal(std::deque<unsigned long> &Jacobsthal)
 {
-    thePairs &res = this->getResult();
+    size_t size = this->getlosers().size();
+
+     if (size == 0)
+        return Jacobsthal;
+
+    Jacobsthal.push_back(0);
+    if (size == 1)
+        return Jacobsthal;
+    Jacobsthal.push_back(1);
+
+
+    for (size_t i = 2; i < size; i++)
+    {
+        Jacobsthal.push_back(Jacobsthal[i - 1] + (2 * Jacobsthal[i - 2]));
+    }
+    return Jacobsthal;
+}
+
+bool PmergeMe::LosersAndWinners(Loser &losers, Winner &winners)
+{
+    thePairs &res = this->getPairs();
+    if (res.empty())
+        return false;
 
     thePairs::iterator it = res.begin();
 
-    
-    // Low value & High Value 
+    // create 2 seperated deque
     while (it != res.end())
     {
         winners.push_back(it->first);
@@ -114,49 +240,72 @@ bool PmergeMe::LosersAndWinners(Loser &loser, Winner &winners)
         it++;
     }
     
+    //winners.insert(winner.begin(), losers[0]);
     // we take those high numbers (second) and find the lowest value and 
-    High::iterator h_it = winners.begin();
-    Low::iterator l_it = losers.begin();
 
-    while (l_it != losers.end())
+    std::deque<unsigned long > Jacob;
+    this->generate_Jacobsthal(Jacob);
+
+    int track  = 0;
+    size_t end;
+    size_t start ;
+    Winner::iterator pos;
+
+    for (size_t i = 0; i < Jacob.size(); i++)
     {
-        Winner::iterator pos = std::lower_bound(h_it , winners.end(), *l_it);
-        winners.insert(pos, *l_it);
-        l_it++;
+        start = Jacob[i];
+
+        if (i == losers.size() - 1)
+            end = losers.size();
+        else
+            end = Jacob[i + 1];
+
+        if (end > losers.size())
+            end = losers.size();
+            
+        while (end > start)
+        {
+            pos = std::lower_bound(winners.begin() , winner.begin() + (end + track), losers[end -1]);
+            winners.insert(pos, losers[end - 1]);
+            track++;  
+            end--;
+        }
     }
     // now the Remaining value
-    Winner::iterator pos = std::lower_bound(h_it , winners.end(), getRemainingV());
-    winners.insert(pos, getRemainingV()); 
-
+    if (has_remaining_value())
+    {
+        pos = std::lower_bound(winners.begin() , winners.end(), getRemainingV());
+        winners.insert(pos, getRemainingV());
+    }
     return true;
 }
 
-losers &PmergeMe::getlosers()
+Loser &PmergeMe::getlosers()
 {
 
-    return this->losers;
+    return this->loser;
 }
 
-winners &PmergeMe::getwinners()
+Winner &PmergeMe::getwinners()
 {
-    return this->winners;
+    return this->winner;
 }
 
-PmergeMe::PmergeMe(char **argv)
+bool &PmergeMe::has_remaining_value()
 {
-    this->remainingV = 0;
-    if (!this->parse_args(argv))
-        return ;
-    this->sortPairs(this->getPairs());
-
-    
-    
+    return this->Remainingflag;
 }
+
+void PmergeMe::set_remaining_value(bool flag)
+{
+    this->Remainingflag = flag;
+}
+
 
 PmergeMe::~PmergeMe()
 {
     
-
+    
 }
 
 unsigned long PmergeMe::getRemainingV()
@@ -167,4 +316,19 @@ unsigned long PmergeMe::getRemainingV()
 void PmergeMe::setRemainingV(unsigned long value)
 {
     this->remainingV = value;
+}
+
+double &PmergeMe::get_first_algo_time()
+{
+    return this->first_algo_time;
+}
+
+double &PmergeMe::get_second_algo_time()
+{
+    return this->second_algo_time;
+}
+
+long &PmergeMe::get_range()
+{
+    return this->range;
 }
