@@ -1,7 +1,7 @@
 NAME = btc
 
 CXX = c++
-CXXFLAGS = -Wall  -std=c++98
+CXXFLAGS = -Wall -std=c++98
 
 SRC = main.cpp BitcoinExchange.cpp
 OBJ = $(SRC:.cpp=.o)

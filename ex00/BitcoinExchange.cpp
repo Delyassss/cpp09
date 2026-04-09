@@ -10,8 +10,6 @@ bool isNumber(std::string line, int forDate)
 {
     size_t i = 0;
     
-    // std::cout << "Line {" << line << "}" << std::endl;
-
     if (line.empty())
         return false;
 
@@ -40,8 +38,11 @@ bool isleap (int year)
         leap = true;
     return leap;
 }
+
 bool checkDay(long day, long month, long year)
 {
+    if (month < 1 || month > 12)
+        return (false);
     bool isLeap = isleap(year);
     int fevrier = isLeap ? 29 : 28;
     int  dayinmonth[12] = {31, fevrier, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
@@ -55,7 +56,7 @@ bool validDate(std::vector<std::string> strs)
     long year = std::atol(strs[0].c_str());
     long month = std::atol(strs[1].c_str());
     long day = std::atol(strs[2].c_str());
-    if (year < 2009 || year > 2022)
+    if (year < 2009)
         return (std::cout << "Error: not a valid date." << std::endl, false);
     if (month < 1 || month > 12 || day < 1 || day > 31)
         return (std::cout << "Error: not a valid date." << std::endl, false);
@@ -68,7 +69,7 @@ bool isTime(std::string line)
     std::string item;
     
     if (line.size() != 10)
-    return (std::cout << "Error: invalid date format" << std::endl, false);
+        return (std::cout << "Error: invalid date format" << std::endl, false);
     std::stringstream ss(line);
 
     while (std::getline(ss, item , '-'))
@@ -79,28 +80,26 @@ bool isTime(std::string line)
     }
     if (strs.size() != 3)
         return (std::cout << "Error: invalid date format" << std::endl, false);
-    validDate(strs);
-    return (true);
+
+    return (validDate(strs));
 }
 
 bool BitcoinExchange::checkFormatandInsert(std::string line, char delim, int insert , data_M &data)// 1 for insert
 {
     std::vector <std::string> strs;
     std::string extracted;
+    size_t start = 0;
     size_t pos = 0;
-    while ((pos = line.find(delim, pos)) != std::string::npos)
-    {
-        extracted = line.substr(0, pos);
-        // std::cout << "extracted {" << extracted << "}" << std::endl;
 
-        strs.push_back(extracted);
-        line.erase(0, pos + 1);
-        pos = 0;
-    }
-    if (line.size() > 0)
+    while ((pos = line.find(delim, start)) != std::string::npos)
     {
-        extracted = line.substr(0 , pos -3);
-        // std::cout << "extracted {" << extracted << "}" << std::endl;
+        extracted = line.substr(start, pos - start);
+        strs.push_back(extracted);
+        start = pos + 1 ;
+    }
+    if (!line.empty() || start < line.length())
+    {
+        extracted = line.substr(start , line.length() - start);
         strs.push_back(extracted);
     }
 
@@ -108,24 +107,19 @@ bool BitcoinExchange::checkFormatandInsert(std::string line, char delim, int ins
     {
         return (std::cout  << "Error: Invalid arguments" << std::endl, false);
     }
+
     std::string date = strs[0];
     date = trimWithSpaces(date);
     std::string value = strs[1];
     value = trimWithSpaces(value);
 
-
-    // std::cout << "value {" << value << "}" << std::endl;
-    // std::cout << "date {" << date << "}" << std::endl;
-
     if (isTime(date) && isNumber(value, insert))
     {
         std::pair<std::string, double> p(date, std::atof(value.c_str()));
         if (insert == 1)
-            data.insert(p);
+            return (data.insert(p), true);
         else
-            return (calcul(date,value, data));
-            
-        return (true);
+            return (calcul(p.first,p.second, data) , true);
     }
     return (false);
 }
@@ -133,11 +127,11 @@ bool BitcoinExchange::checkFormatandInsert(std::string line, char delim, int ins
 void BitcoinExchange::readData(std::map<std::string, double> &mydata, std::string filename, char delim, int insert)// 1 for inserting to the map
 {
     if (filename.empty())
-        (throw std::runtime_error("Empty filename"));
+        (throw std::runtime_error("Error: Empty filename"));
 
     std::ifstream d_input(filename.c_str());
     if (!d_input.is_open())
-        (throw std::runtime_error("Error opening file"));
+        (throw std::runtime_error("Error: Failed to open file"));
 
     std::string line;
     if (delim == ',')
@@ -156,9 +150,7 @@ void BitcoinExchange::readData(std::map<std::string, double> &mydata, std::strin
             std::cerr << "Error: missing (date | value) header !" << std::endl;
     }
     while (std::getline(d_input, line))
-    {
-        if (d_input.eof())
-            break;           
+    {          
         if (checkFormatandInsert(line, delim, insert, mydata) == false)
         {
            if (delim == ',')
@@ -212,16 +204,11 @@ BitcoinExchange::~BitcoinExchange()
 void printRes(double INP_value, double DB_value, std::string date)
 {
     double Res = INP_value * DB_value;
-    std::cout << date << " => " << Res << std::endl;
+    std::cout << date << " => "  << INP_value << " = " << Res << std::endl;
 }
 
-bool BitcoinExchange::calcul(std::string date, std::string svalue, data_M &data)
+bool BitcoinExchange::calcul(std::string date, double value, data_M &data)
 {
-    char *endptr;
-
-    double value = std::strtod(svalue.c_str(), &endptr);
-    if (endptr == svalue.c_str())
-        return (std::cout << "Error: not a valid number." << std::endl, false);
     if (value < 0)
         return (std::cout << "Error: not a valid number." << std::endl, false);
     if (value > 1000)
@@ -229,11 +216,12 @@ bool BitcoinExchange::calcul(std::string date, std::string svalue, data_M &data)
     if (data.empty())
         return (std::cout << "Error: database is empty" << std::endl, false);
 
+
     data_M::iterator it = data.lower_bound(date);
     
         if ( it != data.end() && it->first == date)
         {
-            printRes(value, it->second, it->first);
+            printRes(value, it->second, date);
             return (true);
         }
          else
@@ -241,8 +229,8 @@ bool BitcoinExchange::calcul(std::string date, std::string svalue, data_M &data)
             if (it != data.begin())
                  it--;
             else
-                return (std::cout << "Error: Bad Input !", false);
-             printRes(value, it->second, it->first);
+                return (std::cout << "Error: Bad Input -> " << date << std::endl, false);
+             printRes(value, it->second, date);
              return (true);
          }     
     return (false);

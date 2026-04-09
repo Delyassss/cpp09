@@ -34,7 +34,7 @@ class BitcoinExchange
     data_M      &getdata();
     input_M     &getinput();
     void        readData(std::map<std::string, double> &mydata, std::string filename, char delim, int insert);
-    bool        calcul(std::string date , std::string value, data_M &data);
+    bool        calcul(std::string date , double value, data_M &data);
     bool        checkFormatandInsert(std::string line, char split, int insert , data_M &data);
     
 
