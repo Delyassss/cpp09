@@ -57,19 +57,22 @@ int Itemcheck(std::string item)
 {
     if (item.empty() || item.size() > 1)
         return (std::cerr << "Error" << std::endl, 0);
-    if (notOperator(item[0]) && !std::isdigit(item[0]))
+    if (notOperator(item[0]) && !isdigit(item[0]))
         return (std::cerr << "Error" << std::endl, 0);
 
     return (1);
 }
 
-int execute(stackk &mystack, std::string oper)
+bool execute(stackk &mystack, std::string oper)
 {
+    if (mystack.size() < 2) // in case if we dont have pair for the math 
+        return (std::cerr << "Error" << std::endl, false);
+
     long Right = mystack.top();
         mystack.pop();
     
-    if (mystack.empty()) // in case if we dont have pair for the math 
-        return (std::cerr << "Error" << std::endl, 0);
+    // if (mystack.empty()) // in case if we dont have pair for the math 
+    //     return (std::cerr << "Error" << std::endl, false);
 
     long Left = mystack.top();
         mystack.pop();
@@ -83,7 +86,7 @@ int execute(stackk &mystack, std::string oper)
         if (oper == "/")
             mystack.push(Left / Right);
 
-    return (mystack.top());
+    return (true);
 }
 
 void RPN::parsing(std::string line)
@@ -103,7 +106,6 @@ void RPN::parsing(std::string line)
 
     while (std::getline(ss, item, ' '))
     {
-        
         if (item.empty())
             continue;
 
@@ -111,7 +113,10 @@ void RPN::parsing(std::string line)
             return ;
 
         if (!notOperator(item[0]))
-            execute(mystack, item);
+        {
+            if (!execute(mystack, item))
+                return ;
+        }
         else
         {
             nb = std::atol(item.c_str());
