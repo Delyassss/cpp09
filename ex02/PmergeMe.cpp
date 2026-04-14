@@ -232,7 +232,7 @@ bool PmergeMe::LosersAndWinners(Loser &losers, Winner &winners)
 
     thePairs::iterator it = res.begin();
 
-    // create 2 seperated deque
+    // create 2 seperated deque why deque cuz it better at insert he has a smart shift & no need to reallocate again if the memmory is full he can just ask the os for another memmort block and insert the new value 
     while (it != res.end())
     {
         winners.push_back(it->first); // so the first is the higher value in its own Pair but winners[i] < winners[i + 1] (winners are sorted)
