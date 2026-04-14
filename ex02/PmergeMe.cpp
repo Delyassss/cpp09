@@ -109,7 +109,7 @@ bool digits(std::string str)
 
 bool PmergeMe::parse_args(char **argv, int argc)
 {
-   thePairs &v = this->getPairs();
+    thePairs &v = this->getPairs();
     std::pair<int, int> p;
 
     if (!argv || !argv[1])
@@ -117,15 +117,16 @@ bool PmergeMe::parse_args(char **argv, int argc)
     
     for (int i = 1; argv[i]; i++)
     {
-        if (!digits(argv[i]))
+        if (!digits(argv[i]))// not a digit 
             return (std::cerr << "Error\n", false);
-        if (i % 2 == 0)
+        
+        if (i % 2 == 0) // pairing 
         {
-            p.first = std::max(atoi(argv[i - 1]), atoi(argv[i]));
+            p.first = std::max(atoi(argv[i - 1]), atoi(argv[i])); // so the first is the higher value 
             p.second = std::min(atoi(argv[i - 1]), atoi(argv[i]));
             v.push_back(p);
         }
-        if (i + 1 >= argc && !(i % 2 == 0))
+        if (i + 1 >= argc && !(i % 2 == 0)) // if we have an odd container
         {
             set_remaining_value(true);
             this->setRemainingV(atoi(argv[i]));
@@ -139,8 +140,6 @@ thePairs &PmergeMe::getPairs()
 {
     return this->v;
 }
-
-
 
 double time_me(struct timeval start, struct timeval end)
 {
@@ -170,7 +169,7 @@ thePairs PmergeMe::sortPairs(thePairs &v)
     size_t i = 0;
     size_t j = 0;
 
-    while (i < left.size() && j < right.size())
+    while (i < left.size() && j < right.size()) // here we take the the lower pair and push it to res like if i > j ==> j++ and i stay the same to compare with the next j pair ...
     {
         if (left[i].first > right[j].first)
         {
@@ -184,12 +183,12 @@ thePairs PmergeMe::sortPairs(thePairs &v)
         }
     }
 
-    while (i < left.size())
+    while (i < left.size()) // leftover basically the last pair has a higher value so we just push it back
     {
         res.push_back(left[i]);
         i++;
     }
-    while (j < right.size())
+    while (j < right.size()) 
     {
         res.push_back(right[j]);
         j++;
@@ -221,6 +220,7 @@ std::deque<unsigned long> &PmergeMe::generate_Jacobsthal(std::deque<unsigned lon
     {
         Jacobsthal.push_back(Jacobsthal[i - 1] + (2 * Jacobsthal[i - 2]));
     }
+
     return Jacobsthal;
 }
 
@@ -235,16 +235,13 @@ bool PmergeMe::LosersAndWinners(Loser &losers, Winner &winners)
     // create 2 seperated deque
     while (it != res.end())
     {
-        winners.push_back(it->first);
-        losers.push_back(it->second);
+        winners.push_back(it->first); // so the first is the higher value in its own Pair but winners[i] < winners[i + 1] (winners are sorted)
+        losers.push_back(it->second); // not sorted but we know they belong to an specific winner so winners[i] > loser[i] so we later just insert loser[i] before winners[i]
         it++;
     }
-    
-    //winners.insert(winner.begin(), losers[0]);
-    // we take those high numbers (second) and find the lowest value and 
 
     std::deque<unsigned long > Jacob;
-    this->generate_Jacobsthal(Jacob);
+    this->generate_Jacobsthal(Jacob);  // its a sequence similar to fibonacci we use it to get the range of index we need to insert back in the winners
 
     int track  = 0;
     size_t end;
