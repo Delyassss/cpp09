@@ -8,52 +8,72 @@
 #include <time.h>
 #include <sys/time.h>
 #include <iomanip>
+#include <stdlib.h>
 
-typedef std::vector<std::pair<unsigned long, unsigned long> > thePairs;
+typedef std::deque<std::pair<unsigned long, unsigned long> > thePairs;
 typedef std::deque<unsigned long> Loser;
 typedef std::deque<unsigned long> Winner;
+
+typedef std::vector<std::pair<unsigned long, unsigned long> > vecPairs;
+typedef std::vector<unsigned long> vecLoser;
+typedef std::vector<unsigned long> vecWinner;
 
 
 class PmergeMe
 {
     private :
-        unsigned long remainingV;
+        unsigned long             remainingV;
         thePairs v;
-        thePairs result;
+        vecPairs vecpairs;
         bool                      Remainingflag;
-        std::deque<unsigned long> loser;
-        std::deque<unsigned long> winner;
+        Loser loser;
+        Loser winner;
+        vecLoser vecloser;
+        vecWinner vecwinner;
         std::deque<unsigned long> Jacobsthal;
         double first_algo_time;
-        double second_algo_time;
         long     range;
 
 
 
 
+        
+        public :
+        PmergeMe(char **argv , int argc);
+        ~PmergeMe();
+        unsigned long               getRemainingV();
+        void                        setRemainingV(unsigned long value);
+        bool                        parse_args(char **argv, int argc);
+        std::deque<unsigned long>   &generate_Jacobsthal(std::deque<unsigned long> &Jacobsthal);
+        bool                        &has_remaining_value();
+        void                        set_remaining_value(bool flag);
+        long                        &get_range();
+        
         PmergeMe();
         PmergeMe(const PmergeMe &other);
         PmergeMe &operator=(const PmergeMe &other);
-     
-    public :
-        PmergeMe(char **argv , int argc);
-        ~PmergeMe();
-        unsigned long getRemainingV();
-        void        setRemainingV(unsigned long value);
-        bool        parse_args(char **argv, int argc);
+        
+        
+        
+        /*                                        deque                                        */
+        void        mergeInsert(thePairs &pairs, char **argv, int argc);
+        void        Output(Winner &winners, char **argv , int argc);
         thePairs    &getPairs();
         thePairs    sortPairs(thePairs &v);
-        thePairs    &getResult();
         bool        LosersAndWinners(Loser &losers, Winner &winners);
         Loser       &getlosers();
-        Winner        &getwinners();
-        std::deque<unsigned long> &generate_Jacobsthal(std::deque<unsigned long> &Jacobsthal);
-        bool        &has_remaining_value();
-        void        set_remaining_value(bool flag);
-        void        Output(Winner &winners, char **argv , int argc);
-        double      &get_first_algo_time();
-        double      &get_second_algo_time();
-        long        &get_range();
+        Winner      &getwinners();
+        
+        
+
+    /*                                        vector                                        */
+        void        mergeInsert(vecPairs &pairs, char **argv, int argc);
+        void        Output(vecWinner &winners, char **argv , int argc);
+        vecLoser    &getveclosers();
+        vecWinner   &getvecwinners();
+        vecPairs    sortPairs(vecPairs &v);
+        vecPairs    &getvecPairs();
+        bool        LosersAndWinners(vecLoser &losers, vecWinner &winners);
 
 
 
