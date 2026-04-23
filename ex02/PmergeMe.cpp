@@ -7,7 +7,7 @@ PmergeMe::PmergeMe(char **argv, int argc)
     this->Remainingflag = false;
 
     if (!this->parse_args(argv, argc))
-        return ;
+        throw std::runtime_error("") ;
 }
 
 

@@ -33,8 +33,11 @@ class PmergeMe
         std::deque<unsigned long> Jacobsthal;
         double first_algo_time;
         long     range;
-
-
+        PmergeMe();
+        PmergeMe(const PmergeMe &other);
+        PmergeMe &operator=(const PmergeMe &other);
+        
+        
 
 
         
@@ -49,9 +52,6 @@ class PmergeMe
         void                        set_remaining_value(bool flag);
         long                        &get_range();
         
-        PmergeMe();
-        PmergeMe(const PmergeMe &other);
-        PmergeMe &operator=(const PmergeMe &other);
         
         
         
